@@ -7,6 +7,7 @@
 	import Card from './Card.svelte';
 	import Condition from './Condition.svelte';
 	import EachBlock from './Each.svelte';
+	import AwaitBlock from './AwaitBlock.svelte';
 
 	let name = 'world';
 	let html = "<p class='htmlp'>这是一个p标签</p>";
@@ -61,7 +62,12 @@
 <!-- 条件渲染 -->
 <Condition />
 --------------------------
+<!-- 列表渲染 -->
 <EachBlock />
+--------------------------
+<!-- 异步渲染方式 -->
+<br>
+<AwaitBlock />
 
 
 

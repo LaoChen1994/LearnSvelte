@@ -68,7 +68,7 @@ export default app;
 
 + 实现效果
 
-![image-20200508004902928](/img/\image-20200508004902928.png)
+![image-20200508004902928](./img/\image-20200508004902928.png)
 
 上面这个例子表明几点：
 
@@ -588,4 +588,41 @@ let cardInfo = {
 我们只需要在as的元素后面通过()来绑定一个每个item中的一个元素即可
 
 ![](.\img\listrenderfix.gif)
+
+### 12. 异步渲染模块
+
+我们通常会遇到这么一个问题：我们希望在**异步获取请求之后，再相应渲染页面**，svelte中提供了await-block来实现这个过程。当然也可以和vue和react一样，在调用接口后手动设置对应state的值，然后进行条件渲染。只不过svelte提供了这么一个方式，更为方便。
+
++ 代码例子
+
+~~~svelte
+<script>
+    function getRandomNumber() {
+        return new Promise((resolve, reject) => {
+            setTimeout(() => resolve(Math.random()), 3000)
+        })
+    }
+</script>
+
+<div>
+    {#await getRandomNumber()}
+        <!-- promise is pending -->
+        wait data,loading........
+    {:then value}
+        <!-- promise was fulfilled -->
+        The random number is {value}
+    {:catch error}
+        <!-- promise was rejected -->
+        there are some error
+    {/await}
+</div>
+~~~
+
++ 实现效果
+
+这里的实现效果就是，一开始显示loading的状态，3秒后会显示 生成的随机数
+
+
+
+
 
