@@ -68,7 +68,7 @@ export default app;
 
 + 实现效果
 
-![image-20200508004902928](./img/\image-20200508004902928.png)
+![image-20200508004902928](./img/image-20200508004902928.png)
 
 上面这个例子表明几点：
 
@@ -125,7 +125,7 @@ export default app;
 
 + 实现效果
 
-![image-20200509002315264](./img/\image-20200509002315264.png)
+![image-20200509002315264](./img/image-20200509002315264.png)
 
 ### 5. 插入html字符串
 
@@ -164,7 +164,7 @@ export default app;
 
 + 效果和渲染元素的dom结构
 
-![image-20200509003245272](./img/\image-20200509003245272.png)
+![image-20200509003245272](./img/image-20200509003245272.png)
 
 **关键点：**从上面的dom结构中可见由于在style中添加的css选择器都会被自动哈希化，因此，如果想对插入的html字符串的样式进行修改需要通过:global去哈希
 
@@ -212,7 +212,7 @@ export default app;
 
 + 实验效果
 
-![](.\img\declaration.gif)
+![](./img/declaration.gif)
 
 这里的$ 在我的理解中完全可以作为count改变时的一个回调函数，可以类比于react中的useEffect + useMemo，为了验证猜想，我们来测试一下
 
@@ -253,7 +253,7 @@ export default app;
 
 + 实验效果
 
-![](.\img\declaration2.gif)
+![](./img/declaration2.gif)
 
 + 文档是这么说的
 
@@ -338,7 +338,7 @@ $: if (count >= 10) {
 
 + 效果
 
-![](.\img\updateProblem.gif)
+![](./img/updateProblem.gif)
 
 我们通过这种方式进行修改参数发现并不会发生变化，其原因是只有**等号赋值 才会导致页面的刷新**
 
@@ -346,7 +346,7 @@ $: if (count >= 10) {
 
 + 问题解决
 
-![](.\img\updateProblemSolve.gif)
+![](./img/updateProblemSolve.gif)
 
 + 总结
   + 在svelte中，利用非=号的方式对引用类型进行修改会导致页面更新监听的失效，例如数组的splice和push方法
@@ -446,7 +446,7 @@ let cardInfo = {
 
 + 实验效果
 
-![image-20200512233723828](./img/\image-20200512233723828.png)
+![image-20200512233723828](./img/image-20200512233723828.png)
 
 ### 10. 条件渲染
 
@@ -484,7 +484,7 @@ let cardInfo = {
 
 + 效果
 
-![](.\img\updateProblemSolve.gif)
+![](./img/updateProblemSolve.gif)
 
 ### 11.  列表循环渲染
 
@@ -522,7 +522,7 @@ let cardInfo = {
 
 + 效果
 
-  ![image-20200516114949394](./img/\image-20200516114949394.png)
+  ![image-20200516114949394](./img/image-20200516114949394.png)
 
 + 需要注意的问题
 
@@ -548,7 +548,7 @@ let cardInfo = {
 
 我们的目标是**点击按钮后第一个同学的信息会被删除**
 
-~~~svelte\
+~~~svelte
 <script>
   import EachSonBlock from "./EachSonBlock.svelte";
 
@@ -571,7 +571,7 @@ let cardInfo = {
 
 + 效果
 
-![](.\img\listrenderProblem.gif)
+![](./img/listrenderProblem.gif)
 
 发现问题了吗，**每次都是从尾部删除的！！！！**,这样完全违背了我们的想法，为了解决这个问题，官方推荐将便利元素和渲染的元素进行绑定通过 **p(p.id类似的方法)**来实现渲染元素和数据的**强绑定**
 
@@ -587,7 +587,7 @@ let cardInfo = {
 
 我们只需要在as的元素后面通过()来绑定一个每个item中的一个元素即可
 
-![](.\img\listrenderfix.gif)
+![](./img/listrenderfix.gif)
 
 ### 12. 异步渲染模块
 
