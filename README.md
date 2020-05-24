@@ -759,3 +759,255 @@ let cardInfo = {
 <MyInput bind:fVal={myInputVal} label="自定义输入" />
 ~~~
 
+
+
+### 14. 生命周期函数
+
+svelte存在的声明周期包括
+
++ onMount
++ onDestory
++ beforeUpdate
++ afterUpdate
++ tick（暂时没有找到相关的例子）
+
+#### 1. onMount
+
+翻译自官网文档：onMount函数在组件都挂在在DOM上之后会触发，在组件初始化的过程中进行调用。如果onMount返回了一个函数， 则这个函数会在组件卸载的时候触发。类似react中的USeEffect，我是这么理解的。
+
+**但是在实际测试过程中，当我的onMount返回一个函数，好像在组件卸载的时候并不会被执行**
+
+一般对于一些列表组件，我们希望在列表初始化的时候，拉取数据，我们可以在onMount中写这个东西
+
+~~~svelte
+  import { onMount } from "svelte";
+  
+  onMount(async () => {
+    console.log('Mounted')
+    loading = true;
+    const res = await fetch("http://localhost:3000/students");
+    const data = await res.json()
+
+    loading = true;
+    students = data.data;
+
+    return () => console.log("unMounted")
+  });
+~~~
+
+#### 2. onDestory
+
+翻译自官方文档: 在组件卸载时调用的回调。
+
+应用场景，当我们页面加载的时候，我们可能开启一些定时任务，比如使用setInterval,如果当页面卸载时，不关闭该setInterval会产生内存泄漏的问题。因此，onDestory就是给了这么一个回调。
+
+~~~svelte
+import { onDestroy } from "svelte";
+
+onDestroy(() => clearInterval(timer1));
+~~~
+
+
+
+#### 3.  beforeUpdate和afterUpdate
+
+翻译自官方文档：beforeUpdate执行该回调函数在组件**状态改变**但组件更新之前，但第一次被调用的时候在onMounted之前;afterUpdate在组件被更新之后调用。
+
+我的理解就是：此时**props和state**在beforeUpdate和afterUpdate其实都已经被更新，但是还没有渲染到dom上。因此，我们去拿对应的state，**应该都是更新过后的state了**。
+
+因此我们来解决一个问题：**如果需要对prevState和curState**进行对比的操作。
+
+~~~svelte
+<script>
+  import { beforeUpdate, afterUpdate } from "svelte";
+  
+  export let count;
+  let lastCount;
+
+  beforeUpdate(() => {
+      console.log(`before update = ${count}, lastCount=${lastCount}`);
+  })
+
+  afterUpdate(() => (lastCount = count ,console.log(`after update = ${count}`)));
+  
+</script>
+~~~
+
+上述代码中，count是一个prop，其受外部控制，来模拟数据更新的场景。
+
+我们可以通过一个已有变量lastCount，在afterUpdate的时候将其值进行更新，这样beforeUpdate中就可以获取原来的state，从而做出相应的操作了。
+
+
+
+#### 4. tick
+
+tick的作用类似于vue中的nextTick,都是等到下一次更新的时候进行后续的一些操作。不过区别是，svelte中的tick是一个**Promise**封装的异步函数。我们可以通过**await tick()**,使后续的代码“停下”，等到下一次页面更新的时候，再调用后续的操作。这里暂时没想到好的例子。如果有好的场景需要用到这个的话，可以评论一下，我去实现一下。来看一个官方的例子。
+
+~~~svelte
+<script>
+	import { tick } from 'svelte';
+
+	let text = `Select some text and hit the tab key to toggle uppercase`;
+
+	async function handleKeydown(event) {
+		if (event.key !== 'Tab') return;
+
+		event.preventDefault();
+
+		const { selectionStart, selectionEnd, value } = this;
+		const selection = value.slice(selectionStart, selectionEnd);
+
+		const replacement = /[a-z]/.test(selection)
+			? selection.toUpperCase()
+			: selection.toLowerCase();
+
+		text = (
+			value.slice(0, selectionStart) +
+			replacement +
+			value.slice(selectionEnd)
+		);
+
+		await tick();
+		this.selectionStart = selectionStart;
+		this.selectionEnd = selectionEnd;
+	}
+</script>
+
+<style>
+	textarea {
+		width: 100%;
+		height: 200px;
+	}
+</style>
+
+<textarea value={text} on:keydown={handleKeydown}></textarea>
+
+~~~
+
+这个例子是因为，需要在tab操作之后还是让选中的单词处于被选中的状态。因此**在tick更新之后，将textArea的Selection设为对应单词的start和end，让其还是被选中的状态**
+
+
+
+#### 5. 生命周期的整体代码
+
+~~~svelte
+<!-- LifeCycle.svelte -->
+<script>
+  import { onMount, onDestroy, beforeUpdate, afterUpdate } from "svelte";
+  
+  export let count;
+  let students = [];
+  let loading = false;
+  let lastCount;
+
+  onMount(async () => {
+    console.log('Mounted')
+    loading = true;
+    const res = await fetch("http://localhost:3000/students");
+    const data = await res.json()
+
+    loading = true;
+    students = data.data;
+
+    return () => console.log("unMounted")
+  });
+
+  onDestroy(() => console.log("is Destory"));
+  
+
+  beforeUpdate(() => {
+      console.log(`before update = ${count}, lastCount=${lastCount}`);
+  })
+
+  afterUpdate(() => (lastCount = count ,console.log(`after update = ${count}`)));
+
+
+</script>
+
+<style>
+  .students {
+    padding: 20px;
+    border: 1px solid #333;
+    border-radius: 8px;
+  }
+</style>
+
+<div class="students">
+
+  {count}
+
+  {#if !loading}
+    <!-- content here -->
+    正在加载学生信息
+  {:else}
+    <!-- else content here -->
+    {#if !students.length}
+      <!-- content here -->
+      没有学生信息了TAT
+    {:else}
+      <!-- else content here -->
+      <table>
+        <thead>
+          <th>姓名</th>
+          <th>年龄</th>
+        </thead>
+      </table>
+
+      <tbody>
+
+        {#each students as stu}
+          <!-- content here -->
+          <tr>
+            <td>{stu.name}</td>
+            <td>{stu.age}</td>
+          </tr>
+        {/each}
+
+      </tbody>
+    {/if}
+  {/if}
+
+</div>
+
+~~~
+
+~~~svelte
+<!-- App.svelte -->
+<script>
+  import LifeCycle from "./LifeCycle.svelte";
+
+  let isShow = false;
+  let count = 0;
+
+  let handleShow = () => (isShow = !isShow);
+  
+  function addCount() {
+	  count++;
+  }
+</script>
+<div>
+  {#if isShow}
+    <!-- content here -->
+    <LifeCycle count={count} />
+  {:else}
+    <!-- else content here -->
+    组件被卸载
+  {/if}
+
+  <button on:click={handleShow}>
+	{#if isShow}
+		 <!-- content here -->
+		 卸载组件
+	{:else}
+		 <!-- else content here -->
+		 添加组件
+	{/if}
+  </button>
+
+  <button on:click={addCount}>+1</button>
+</div>
+~~~
+
++ 效果
+
+![](./img/lifecycle.gif)
