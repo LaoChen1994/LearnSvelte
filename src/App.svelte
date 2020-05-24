@@ -8,6 +8,8 @@
 	import Condition from './Condition.svelte';
 	import EachBlock from './Each.svelte';
 	import AwaitBlock from './AwaitBlock.svelte';
+	import EventFather from './EventFather.svelte';
+	import FormBind from './FormBind.svelte';
 
 	let name = 'world';
 	let html = "<p class='htmlp'>这是一个p标签</p>";
@@ -20,6 +22,10 @@
 
 	function changeName(value) {
 		name = value;
+	}
+
+	function innerEvent(param) {
+		console.log(param)
 	}
 </script>
 
@@ -66,10 +72,14 @@
 <EachBlock />
 --------------------------
 <!-- 异步渲染方式 -->
-<br>
 <AwaitBlock />
 
-
+--------------------------
+<!-- 跨组件传参 -->
+<EventFather a={name} on:sonEvent={innerEvent} />
+-------------------------
+<!-- 表单元素绑定 -->
+<FormBind />
 
 <style>
 	div {

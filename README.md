@@ -624,5 +624,138 @@ let cardInfo = {
 
 
 
+### 13. 表单元素的双向绑定
 
+#### 1. input受控绑定
+
+使用**bind**关键字进行绑定，svelte通过bind关键字来完成类似v-model的双向绑定
+
++ text
+
+~~~svelte
+<input type="text" bind:value={formData.name} />
+~~~
+
++ checkbox
+
+~~~svelte
+<input type="checkbox" bind:checked={formData.checkboxVal} />
+~~~
+
++ number
+
+~~~svelte
+<input type="number" bind:checked={formData.number} />
+~~~
+
++ range
+
+~~~svelte
+<input type="range" bind:checked={formData.rangeVal} />
+~~~
+
++ select
+
+~~~svelte
+<script>
+  let questions = [
+    { id: 1, text: 'question 1' },
+    { id: 2, text: 'question 2' },
+    {
+      id: 3,
+      text: 'question 3'
+    }
+  ];
+  let selected = 1;
+</svelte>
+
+<select bind:value={selected} on:click={handleSelect}>
+  {#each questions as q, i}
+    <option value={q.id}>{q.text}</option>
+  {/each}
+</select>
+~~~
+
++ textArea
+
+~~~svelte
+<textarea cols="30" rows="10" bind:value={textArea} />
+~~~
+
+#### 2. 使用group进行绑定
+
+对于checkbox和radio组的选择和绑定，采用**bind:group**关键字进行组绑定
+
+~~~svelte
+<script>
+	  let gender = [
+        {
+          label: "男",
+          value: true
+        },
+        {
+          label: "女",
+          value: false
+        }
+      ];
+      let hobbies = ["baseball", "basketball", "tennis", "soccer"];
+
+      let radioGender;
+      let selectHobby = [];
+</script>
+
+{#each gender as gen, i}
+    <div class="inline">
+    <input
+        type="radio"
+        bind:group={radioGender}
+        value={gen.value}
+        id={`radio-${i}`} 
+    />
+    <label for={`radio-${i}`}>{gen.label}</label>
+    </div>
+{/each}
+
+{#each hobbies as hobby, i}
+  <input
+    type="checkbox"
+    bind:group={selectHobby}
+    value={hobby}
+    id={`checkbox-${i}`} />
+  <label for={`checkbox-${i}`}>{hobby}</label>
+{/each}
+~~~
+
+#### 3. 获得DOM元素
+
+使用**bind:this**来绑定得到对应DOM元素对象，类似于react中的ref
+
+经典例子： input外部控制聚焦
+
+~~~svelte
+<input type="text" bind:this={inputRef}>
+<button on:click={() =>{inputRef.focus()}}>input聚焦</button>
+~~~
+
+#### 4. 自定义元素通过bind实现双向绑定
+
+自定义一个带label的输入框，先
+
+~~~svelte
+<!---MyInput.svelte--->
+<script>
+    export let fVal, label;
+</script>
+
+<div>
+    <span>{label}</span>
+    <input type="text" bind:value={fVal}>
+</div>
+~~~
+
+父组件，通过**bind:fVal**来实现父组件的变量和内部input的双向绑定
+
+~~~svelte
+<MyInput bind:fVal={myInputVal} label="自定义输入" />
+~~~
 
