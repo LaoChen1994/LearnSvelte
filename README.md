@@ -1011,3 +1011,174 @@ tick的作用类似于vue中的nextTick,都是等到下一次更新的时候进�
 + 效果
 
 ![](./img/lifecycle.gif)
+
+### 15. Store
+
+Store主要功能是类似vuex、redux和mobx等工具，用于跨组件之间的状态共享。
+
+#### 1. Store注册与更新
+
+Store写法只需要写在一个js文件中，然后通过svelte/store中提供的**writable方法来向公共仓库中注册一个值**作为一个仓库元素，之后在组件内可以通过subscribe来监听仓库元素的变化（理解上来说本质上是一个发布订阅的模式），通过**set**和**update**来发布仓库内某一个值的变化。
+
++ Set：直接将仓库内的某个数指定为某个值
++ Update：接收一个仓库当前值的参数的回调函数，将执行结果作为要更新仓库参数的值
+
+
+
+**来看一个例子**
+
+~~~svelte
+// Store.js
+import { writable } from 'svelte/store'
+
+const initalEvent = [{
+    id: 1,
+    name: "空白事件1",
+    desc: "这是一个测试事件"
+}];
+
+const initHobbies = ["抽烟","喝酒","烫头"]
+
+// 在仓库中写入两个需要被监听的值
+export const eventList = writable(initalEvent)
+export const hobbies = writable(initHobbies)
+
+// Store.svelte
+<script>
+    // your script goes here
+    import { eventList, hobbies } from './Store/Store.js';
+    import MyInput from './MyInput.svelte'
+
+    let list = [];
+    let newEvent = "";
+    let newDesc = "";
+
+
+    eventList.subscribe(value => {
+        list = value;
+    });
+
+    const handleBtnClick = () => {
+        eventList.update(value => {
+            return [...value, {
+                id: value.length + 1,
+                name: newEvent,
+                desc: newDesc
+            }]
+        })
+        newEvent = newDesc =  "";
+    };
+
+
+    const handleClear = () =>{
+        eventList.set([])
+    }
+</script>
+
+<table>
+    <thead>
+        <th>事件编号</th>
+        <th>事件名称</th>
+        <th>事件详情</th>
+    </thead>
+    <tbody>
+    {#each list as item}
+         <!-- content here -->
+         <tr>
+            <td>{item.id}</td>
+            <td>{item.name}</td>
+            <td>{item.desc}</td>
+         </tr>
+    {/each}
+    </tbody>
+</table>
+
+
+<MyInput label="事件名称" bind:fVal={newEvent} />
+<MyInput label="事件细节" bind:fVal={newDesc} />
+<button on:click={handleBtnClick}>添加新事件</button>
+<button on:click={handleClear}>清空事件</button>
+
+<div>
+    <span>我们的爱好是 {$hobbies.join(",")}</span>
+</div>
+~~~
+
+**几个要注意的点：**
+
+1. 通过evemtList.subscribe来保持组件内部的参数和仓库中的参数保持一致
+2. 利用update和set对仓库内的eventList变量进行更新
+
+**存在的问题：**
+
+如果当有多个共有变量需要被引入，我们莫非要写很多xxx.subscribe(value => xxx = value)很麻烦，因此**svelte使用了$+param**来**自动订阅**引入变量内部的参数值，如上面例子中的hobbies,我们通过**$hobbies，set，update来直接更新仓库内的参数值**
+
+
+
+**实验结果**
+
+![](./img/Store1.gif)
+
+
+
+#### 2. Store的继承
+
+使用derived方法，来继承一个仓库，并对这个仓库的值可以做出相应的操作，可以类比于vuex中的computed
+
+~~~svelte
+// Store.js
+// 这里省略上面的代码
+
+// 第一个参数是需要继承的对象
+// 后面是一个回调函数，参数为继承仓库的内部的值
+// 返回值为该变量对应仓库内存储的值
+export const unSolvedEvents = derived(eventList, e => e.length)
+
+~~~
+
+
+
+#### 3. Store的双向绑定和封装
+
+我们可以将一个Counter Store的功能进行封装
+
+具体封装的例子如下
+
+~~~svelte
+// Store.js
+function createCounter(initCount = 0) {
+    const { subscribe, set, update } = writable(initCount)
+
+    return {
+        subscribe,
+        increase: (num = 1) => update(c => c + num),
+        decrease: (num = 1) => update(c => c - num),
+        clear: () => set(0),
+        set
+    }
+}
+
+export const count = createCounter()
+export const doubleCount = derived(count, c => c * 2)
+~~~
+
+~~~svelte
+// Store.svelte
+<div>
+    {$count} * 2 = {$doubleCount}
+    <input type="text" bind:value={$count}>
+    <button on:click={() => count.increase(1)}>+1</button>
+    <button on:click={() => count.decrease(1)}>-1</button>
+
+</div>
+~~~
+
+**这里有几个点需要注意**
+
++ 如果要对**仓库的值**使用**双向绑定**，需要再导出的时候导出**set**方法，然后如果要使用$count来**自动订阅count**变量，我们需要在导出的时候导出subscribe！！
++ 双向绑定方法还是一样通过$count可以直接修改和得到count仓库内的值
+
+**实验效果**
+
+![](./img/Store2.gif)
+

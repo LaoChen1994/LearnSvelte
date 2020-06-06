@@ -10,7 +10,9 @@
   import AwaitBlock from "./AwaitBlock.svelte";
   import EventFather from "./EventFather.svelte";
   import FormBind from "./FormBind.svelte";
+  import TodoList from './TodoList/TodoList.svelte';
   import LifeCycle from "./LifeCycle.svelte";
+  import Store from './Stote.svelte'
 
   let name = "world";
   let html = "<p class='htmlp'>这是一个p标签</p>";
@@ -112,3 +114,10 @@
 
   <button on:click={addCount}>+1</button>
 </div>
+
+-------------------------------
+<TodoList/>
+
+-------------------------------
+<!-- Store -->
+<Store />

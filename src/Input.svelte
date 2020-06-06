@@ -10,5 +10,5 @@
 
 <div>
     <span>{label}</span>
-    <input type="text" value={value} />
+    <input type="text" bind:value={value} />
 </div>
